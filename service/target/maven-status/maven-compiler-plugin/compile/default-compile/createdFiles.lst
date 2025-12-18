@@ -1,1 +1,3 @@
+prpo\goalmanagment\dtos\CreateGoalRequest.class
 prpo\goalmanagment\GoalRepository.class
+prpo\goalmanagment\dtos\UpdateGoalRequest.class
