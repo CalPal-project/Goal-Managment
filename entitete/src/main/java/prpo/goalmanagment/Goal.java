@@ -15,7 +15,7 @@ public class Goal {
         private Character goalType;// F, W, C
         private LocalDate dateStart;
         private LocalDate dateEnd; //optional
-        private String status; // in progress, done
+        private String status; // in progress, completed
         
         
         //F:

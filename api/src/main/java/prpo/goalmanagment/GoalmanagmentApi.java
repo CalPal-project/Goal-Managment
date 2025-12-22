@@ -1,6 +1,9 @@
 package prpo.goalmanagment;
 
 import java.beans.Transient;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -111,7 +114,79 @@ public class GoalmanagmentApi {
 
     @GetMapping("/api/allGoals")
     public List<Goal> getAllGoals() {
-        return gr.findAll(); // Če uporabljaš JPA repository
+        List<Goal> goals = gr.findAll(); 
+        LocalDate today = LocalDate.now();
+        for(int i = 0; i < goals.size(); i++){
+            Goal trgoal = goals.get(i);
+
+            if(trgoal.getdateEnd() != null && !trgoal.getdateEnd().isAfter(today)){
+                trgoal.setstatus("completed");
+                continue;
+            }
+            Character type = trgoal.getgoalType();
+            if(type == 'F'){
+                Character ftype = trgoal.getfitnessType();
+                if(ftype == 'F'){
+                    if(trgoal.getweeklyFitness() == trgoal.getweeklyFitnessDone()){
+                        //completed
+                        trgoal.setstatus("completed");
+                        continue;
+                    }
+                    continue;
+                }
+                if(ftype == 'R'){
+                    if(trgoal.getkms() == trgoal.getkmsDone()){
+                        //completed
+                        trgoal.setstatus("completed");
+                        continue;
+                    }
+                    continue;
+                }
+                if(ftype == 'S'){
+                    if(trgoal.getsteps() == trgoal.getstepsDone()){
+                        //completed
+                        trgoal.setstatus("completed");
+                        continue;
+                    }
+                    continue;
+                }
+                
+            }
+            else if(type == 'W'){
+                if(trgoal.getcurrentWeight() == trgoal.getgoalWeight()){
+                    //completed
+                    trgoal.setstatus("completed");
+                    continue;
+                }
+                continue;   
+            }
+            else if(type == 'C'){
+                if(trgoal.getcals() == trgoal.geteatenCals()){
+                    //completed
+                    trgoal.setstatus("completed");
+                    continue;
+                }
+                continue;
+            }
+        }
+
+        //uredimo goale da so najprej "in progress" prikazani
+        Collections.sort(goals, new Comparator<Goal>() {
+        @Override
+        public int compare(Goal g1, Goal g2) {
+            boolean g1InProgress = "in progress".equals(g1.getstatus());
+            boolean g2InProgress = "in progress".equals(g2.getstatus());
+            
+            if(g1InProgress && !g2InProgress) {
+                return -1; // g1 pride pred g2
+            } else if(!g1InProgress && g2InProgress) {
+                return 1; // g2 pride pred g1
+            } else {
+                return 0; // ostanejo v istem vrstnem redu
+            }
+        }
+    });
+        return goals;
     }
 
     @GetMapping("/api/existsGoalType")
@@ -277,7 +352,8 @@ public class GoalmanagmentApi {
     public void complete(Long id){
         Optional<Goal> ogoal = gr.findById(id);
         Goal goal = ogoal.get();
-        goal.setstatus("Complete");
+        goal.setstatus("completed");
+        gr.save(goal);
     }
 
 
