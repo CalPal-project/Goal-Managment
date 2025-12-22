@@ -11,25 +11,29 @@ public class Goal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String goalTitle;
-    private Character goalType;// F, W, C
-    private LocalDate dateStart;
-    private LocalDate dateEnd;
-    private String status; // in progress, done
-    //private Integer progress = 0;
-    
-    //F:
-    private Character fitnessType = null; //F, R, S fitnes, run, steps
-    private Double weeklyFitness = null;
-    private Double kms = null;
-    private Integer steps = null;
+        private String goalTitle;
+        private Character goalType;// F, W, C
+        private LocalDate dateStart;
+        private LocalDate dateEnd; //optional
+        private String status; // in progress, done
+        
+        
+        //F:
+        private Character fitnessType = null; //F, R, S fitnes, run, steps
+        private Double weeklyFitness = null;
+        private Double weeklyFitnessDone = null;
+        private Double kms = null;
+        private Double kmsDone = null;
+        private Integer steps = null;
+        private Integer stepsDone = null;
 
-    //C:
-    private Integer cals = null;
+        //C:
+        private Integer cals = null;
+        private Integer eatenCals = 0;
 
-    //W:
-    private Double currWeight = null;
-    private Double goalWeight = null;
+        //W:
+        private Double currWeight = null;
+        private Double goalWeight = null;
 
     public Goal(){
 
@@ -64,16 +68,32 @@ public class Goal {
         this.weeklyFitness = d;
     }
 
+    public void setweeklyFitnessDone(Double d){
+        this.weeklyFitnessDone = d;
+    }
+
     public void setkms(Double d){
         this.kms = d;
+    }
+
+    public void setkmsDone(Double d){
+        this.kmsDone = d;
     }
 
     public void setsteps(Integer i){
         this.steps = i;
     }
 
+    public void setstepsDone(Integer i){
+        this.stepsDone = i;
+    }
+
     public void setcals(Integer i){
         this.cals = i;
+    }
+
+    public void seteatenCals(Integer i){
+        this.eatenCals = i;
     }
 
     public void setcurrentWeight(Double c){
@@ -117,16 +137,32 @@ public class Goal {
         return weeklyFitness;
     }
 
+    public Double getweeklyFitnessDone(){
+        return weeklyFitnessDone;
+    }
+
     public Double getkms(){
         return kms;
+    }
+
+    public Double getkmsDone(){
+        return kmsDone;
     }
 
     public Integer getsteps(){
         return steps;
     }
 
+    public Integer getstepsDone(){
+        return stepsDone;
+    }
+
     public Integer getcals(){
         return cals;
+    }
+
+    public Integer geteatenCals(){
+        return eatenCals;
     }
 
     public Double getcurrentWeight(){

@@ -43,23 +43,33 @@ public class GoalmanagmentApi {
             char ftype = request.fitnessType;
             if(ftype == 'F'){
                 goal.setweeklyFitness(request.weeklyFitness);
+                goal.setweeklyFitnessDone(request.weeklyFitnessDone);
 
                 goal.setkms(null);
+                goal.setkmsDone(null);
                 goal.setsteps(null);
+                goal.setstepsDone(null);
             }
             else if(ftype == 'R'){
                 goal.setkms(request.kms);
+                goal.setkmsDone(request.kmsDone);
 
                 goal.setweeklyFitness(null);
+                goal.setweeklyFitnessDone(null);
                 goal.setsteps(null);
+                goal.setstepsDone(null);
             }
             else{ //ftype == "S"
                 goal.setsteps(request.steps);
+                goal.setstepsDone(request.stepsDone);
 
                 goal.setweeklyFitness(null);
+                goal.setweeklyFitnessDone(null);
                 goal.setkms(null);
+                goal.setkmsDone(null);
             }
             goal.setcals(null);
+            goal.seteatenCals(null);
             goal.setcurrentWeight(null);
             goal.setgoalWeight(null);
 
@@ -67,13 +77,17 @@ public class GoalmanagmentApi {
         }   
         else if(type == 'C'){
             goal.setcals(request.cals);
+            goal.seteatenCals(request.eatenCals);
 
             goal.setfitnessType(null);
             goal.setcurrentWeight(null);
             goal.setgoalWeight(null);
             goal.setweeklyFitness(null);
+            goal.setweeklyFitnessDone(null);
             goal.setsteps(null);
+            goal.setstepsDone(null);
             goal.setkms(null);
+            goal.setkmsDone(null);
 
             return gr.save(goal);
         }
@@ -82,10 +96,14 @@ public class GoalmanagmentApi {
             goal.setgoalWeight(request.goalWeight);
 
             goal.setweeklyFitness(null);
+            goal.setweeklyFitnessDone(null);
             goal.setsteps(null);
+            goal.setstepsDone(null);
             goal.setkms(null);
+            goal.setkmsDone(null);
             goal.setfitnessType(null);
             goal.setcals(null);
+            goal.seteatenCals(null);
 
             return gr.save(goal);
         }
@@ -123,23 +141,33 @@ public class GoalmanagmentApi {
             char ftype = request.fitnessType;
             if(ftype == 'F'){
                 goal.setweeklyFitness(request.weeklyFitness);
+                goal.setweeklyFitnessDone(request.weeklyFitnessDone);
 
                 goal.setkms(null);
+                goal.setkmsDone(null);
                 goal.setsteps(null);
+                goal.setstepsDone(null);
             }
             else if(ftype == 'R'){
                 goal.setkms(request.kms);
+                goal.setkmsDone(request.kmsDone);
 
                 goal.setweeklyFitness(null);
+                goal.setweeklyFitnessDone(null);
                 goal.setsteps(null);
+                goal.setstepsDone(null);
             }
             else{ //ftype == "S"
                 goal.setsteps(request.steps);
+                goal.setstepsDone(request.stepsDone);
 
                 goal.setweeklyFitness(null);
+                goal.setweeklyFitnessDone(null);
                 goal.setkms(null);
+                goal.setkmsDone(null);
             }
             goal.setcals(null);
+            goal.seteatenCals(null);
             goal.setcurrentWeight(null);
             goal.setgoalWeight(null);
 
@@ -147,13 +175,17 @@ public class GoalmanagmentApi {
         }   
         else if(type == 'C'){
             goal.setcals(request.cals);
+            goal.seteatenCals(request.eatenCals);
 
             goal.setfitnessType(null);
             goal.setcurrentWeight(null);
             goal.setgoalWeight(null);
             goal.setweeklyFitness(null);
+            goal.setweeklyFitnessDone(null);
             goal.setsteps(null);
+            goal.setstepsDone(null);
             goal.setkms(null);
+            goal.setkmsDone(null);
 
             return gr.save(goal);
         }
@@ -162,14 +194,90 @@ public class GoalmanagmentApi {
             goal.setgoalWeight(request.goalWeight);
 
             goal.setweeklyFitness(null);
+            goal.setweeklyFitnessDone(null);
             goal.setsteps(null);
+            goal.setstepsDone(null);
             goal.setkms(null);
+            goal.setkmsDone(null);
             goal.setfitnessType(null);
             goal.setcals(null);
+            goal.seteatenCals(null);
 
             return gr.save(goal);
         }
 
+    }
+
+    @PutMapping("/api/updateProgressCalories")
+    public void updateProgressCalories(@RequestParam Long id, Integer eatenCals){
+        //updejta kalorije (rocno + za avtomatsko updatanje) 
+        //parameter je koliko kalorij si zdej pojedu tako da se dejansko pristejejo trenutnim 
+        Optional<Goal> ogoal = gr.findById(id);
+        Goal trGoal = ogoal.get();
+        Integer trCals = trGoal.geteatenCals();
+        Integer newCals = trCals+eatenCals;
+        trGoal.seteatenCals(newCals);
+        Integer gcals = trGoal.getcals();
+        Integer newgoalcals = gcals-newCals;
+        //trGoal.setcals(newgoalcals);
+        gr.save(trGoal);
+        return;
+    }
+
+    @PutMapping("/api/updateProgressWeight")
+    public void updateProgressWeight(@RequestParam Long id, Double newWeight){
+        //update na weight goalih
+        Optional<Goal> ogoal = gr.findById(id);
+        Goal trGoal = ogoal.get();
+        trGoal.setcurrentWeight(newWeight);
+        gr.save(trGoal);
+        //pogledamo ce je slucajno done 
+    }
+
+    @PutMapping("/api/updateProgressFitness")
+    public void updateProgressFitness(@RequestParam Long id, Double num){
+        //najprej ugotovis kaksen fitnes goal je nato updatas glede na request body
+        Optional<Goal> ogoal = gr.findById(id);
+        Goal trGoal = ogoal.get();
+        char type = trGoal.getfitnessType();
+        if(type == 'F'){
+            //dodamo stevilko trenutni stevilki -> gumb naj bo da doda eno telovadbo 
+            Double trWeeklyFitness = trGoal.getweeklyFitnessDone();
+            Double newf = trWeeklyFitness + num;
+            trGoal.setweeklyFitnessDone(newf);
+            Double goalf = trGoal.getweeklyFitness();
+            Double newGoalf = goalf - newf;
+            //trGoal.setweeklyFitness(newGoalf);
+            gr.save(trGoal);
+            return;
+        }
+        else if(type == 'R'){
+            Double trkms = trGoal.getkmsDone();
+            Double newtrkms = trkms+num;
+            trGoal.setkmsDone(newtrkms);
+            Double goalkms = trGoal.getkms();
+            Double newgoalkms = goalkms-newtrkms;
+            //trGoal.setkms(newgoalkms);
+            gr.save(trGoal);
+            return;
+        }
+        else if(type == 'S'){
+            Integer trsteps = trGoal.getstepsDone();
+            Integer newtrsteps = trsteps + num.intValue();
+            trGoal.setstepsDone(newtrsteps);
+            Integer goalsteps = trGoal.getsteps();
+            Integer newgoalsteps = goalsteps-newtrsteps;
+            //trGoal.setsteps(newgoalsteps);
+            gr.save(trGoal);
+            return;
+        }
+    }
+
+    @PutMapping("/api/complete")
+    public void complete(Long id){
+        Optional<Goal> ogoal = gr.findById(id);
+        Goal goal = ogoal.get();
+        goal.setstatus("Complete");
     }
 
 

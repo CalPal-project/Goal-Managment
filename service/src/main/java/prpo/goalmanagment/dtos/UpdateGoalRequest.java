@@ -19,8 +19,12 @@ public class UpdateGoalRequest {
 
     //C:
     public Integer cals;
+    public Integer eatenCals;
 
     //W:
     public Double currWeight;
     public Double goalWeight;
+    public Double weeklyFitnessDone;
+    public Integer stepsDone;
+    public Double kmsDone;
 }

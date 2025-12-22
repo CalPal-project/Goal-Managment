@@ -18,8 +18,12 @@ public class CreateGoalRequest {
 
     //C:
     public Integer cals;
+    public Integer eatenCals;
 
     //W:
     public Double currWeight;
     public Double goalWeight;
+    public Double weeklyFitnessDone;
+    public Double kmsDone;
+    public Integer stepsDone;
 }
