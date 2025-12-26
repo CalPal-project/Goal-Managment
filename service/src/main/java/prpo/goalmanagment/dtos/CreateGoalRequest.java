@@ -23,7 +23,7 @@ public class CreateGoalRequest {
     //W:
     public Double currWeight;
     public Double goalWeight;
-    public Double weeklyFitnessDone;
-    public Double kmsDone;
-    public Integer stepsDone;
+    public Double weeklyFitnessDone=0.0;
+    public Double kmsDone=0.0;
+    public Integer stepsDone=0;
 }

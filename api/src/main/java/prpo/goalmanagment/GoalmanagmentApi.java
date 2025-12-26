@@ -283,6 +283,17 @@ public class GoalmanagmentApi {
 
     }
 
+    @GetMapping("/api/getCalorieGoal")
+    public Goal getCalorieGoal(){
+        List<Goal> allGoals = gr.findAll();
+        for(int i = 0; i < allGoals.size(); i++){
+            if(allGoals.get(i).getgoalType() == 'C'){
+                return allGoals.get(i);
+            }
+        }
+        return null;
+    }
+
     @PutMapping("/api/updateProgressCalories")
     public void updateProgressCalories(@RequestParam Long id, Integer eatenCals){
         //updejta kalorije (rocno + za avtomatsko updatanje) 
