@@ -27,4 +27,5 @@ public class UpdateGoalRequest {
     public Double weeklyFitnessDone;
     public Integer stepsDone;
     public Double kmsDone;
+    public Double startWeight;
 }

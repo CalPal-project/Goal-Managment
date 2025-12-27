@@ -26,4 +26,5 @@ public class CreateGoalRequest {
     public Double weeklyFitnessDone=0.0;
     public Double kmsDone=0.0;
     public Integer stepsDone=0;
+    public Double startWeight;
 }

@@ -34,6 +34,7 @@ public class Goal {
         //W:
         private Double currWeight = null;
         private Double goalWeight = null;
+        private Double startWeight = null;
 
     public Goal(){
 
@@ -98,6 +99,10 @@ public class Goal {
 
     public void setcurrentWeight(Double c){
         this.currWeight = c;
+    }
+
+    public void setstartWeight(Double d){
+        this.startWeight = d;
     }
 
     public void setgoalWeight(Double d){
@@ -167,6 +172,10 @@ public class Goal {
 
     public Double getcurrentWeight(){
         return currWeight;
+    }
+
+    public Double getstartWeight(){
+        return startWeight;
     }
 
     public Double getgoalWeight(){

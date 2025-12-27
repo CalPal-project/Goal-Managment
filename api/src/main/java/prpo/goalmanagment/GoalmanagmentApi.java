@@ -75,6 +75,7 @@ public class GoalmanagmentApi {
             goal.seteatenCals(null);
             goal.setcurrentWeight(null);
             goal.setgoalWeight(null);
+            goal.setstartWeight(null);
 
             return gr.save(goal);
         }   
@@ -85,6 +86,7 @@ public class GoalmanagmentApi {
             goal.setfitnessType(null);
             goal.setcurrentWeight(null);
             goal.setgoalWeight(null);
+            goal.setstartWeight(null);
             goal.setweeklyFitness(null);
             goal.setweeklyFitnessDone(null);
             goal.setsteps(null);
@@ -97,6 +99,7 @@ public class GoalmanagmentApi {
         else{ // type == 'W'
             goal.setcurrentWeight(request.currWeight);
             goal.setgoalWeight(request.goalWeight);
+            goal.setstartWeight(request.startWeight);
 
             goal.setweeklyFitness(null);
             goal.setweeklyFitnessDone(null);
@@ -121,55 +124,59 @@ public class GoalmanagmentApi {
 
             if(trgoal.getdateEnd() != null && !trgoal.getdateEnd().isAfter(today)){
                 trgoal.setstatus("completed");
+                gr.save(trgoal);
                 continue;
             }
             Character type = trgoal.getgoalType();
             if(type == 'F'){
                 Character ftype = trgoal.getfitnessType();
                 if(ftype == 'F'){
-                    if(trgoal.getweeklyFitness() == trgoal.getweeklyFitnessDone()){
+                    if(trgoal.getweeklyFitness() <= trgoal.getweeklyFitnessDone() && trgoal.getweeklyFitness()!=null && trgoal.getweeklyFitnessDone()!=null){
                         //completed
                         trgoal.setstatus("completed");
+                        gr.save(trgoal);
                         continue;
                     }
                     continue;
                 }
-                if(ftype == 'R'){
-                    if(trgoal.getkms() == trgoal.getkmsDone()){
+                else if(ftype == 'R'){
+                    if(trgoal.getkms() <= trgoal.getkmsDone() && trgoal.getkms()!=null && trgoal.getkmsDone()!=null){
                         //completed
                         trgoal.setstatus("completed");
+                        gr.save(trgoal);
                         continue;
                     }
                     continue;
                 }
-                if(ftype == 'S'){
-                    if(trgoal.getsteps() == trgoal.getstepsDone()){
+                else if(ftype == 'S'){
+                    if(trgoal.getsteps() <= trgoal.getstepsDone() && trgoal.getsteps()!=null && trgoal.getstepsDone()!=null){
                         //completed
                         trgoal.setstatus("completed");
+                        gr.save(trgoal);
                         continue;
                     }
                     continue;
                 }
-                
             }
             else if(type == 'W'){
-                if(trgoal.getcurrentWeight() == trgoal.getgoalWeight()){
+                if(trgoal.getcurrentWeight() == trgoal.getgoalWeight() && trgoal.getcurrentWeight()!=null && trgoal.getgoalWeight()!=null){
                     //completed
                     trgoal.setstatus("completed");
+                    gr.save(trgoal);
                     continue;
                 }
                 continue;   
             }
             else if(type == 'C'){
-                if(trgoal.getcals() == trgoal.geteatenCals()){
+                if(trgoal.getcals() <= trgoal.geteatenCals() && trgoal.getcals()!=null && trgoal.geteatenCals()!=null){
                     //completed
                     trgoal.setstatus("completed");
+                    gr.save(trgoal);
                     continue;
                 }
                 continue;
             }
         }
-
         //uredimo goale da so najprej "in progress" prikazani
         Collections.sort(goals, new Comparator<Goal>() {
         @Override
@@ -178,14 +185,14 @@ public class GoalmanagmentApi {
             boolean g2InProgress = "in progress".equals(g2.getstatus());
             
             if(g1InProgress && !g2InProgress) {
-                return -1; // g1 pride pred g2
+                return -1;
             } else if(!g1InProgress && g2InProgress) {
-                return 1; // g2 pride pred g1
+                return 1;
             } else {
-                return 0; // ostanejo v istem vrstnem redu
+                return 0; 
             }
         }
-    });
+    });        
         return goals;
     }
 
@@ -245,6 +252,7 @@ public class GoalmanagmentApi {
             goal.seteatenCals(null);
             goal.setcurrentWeight(null);
             goal.setgoalWeight(null);
+            goal.setstartWeight(null);
 
             return gr.save(goal);
         }   
@@ -255,6 +263,7 @@ public class GoalmanagmentApi {
             goal.setfitnessType(null);
             goal.setcurrentWeight(null);
             goal.setgoalWeight(null);
+            goal.setstartWeight(null);
             goal.setweeklyFitness(null);
             goal.setweeklyFitnessDone(null);
             goal.setsteps(null);
@@ -267,6 +276,7 @@ public class GoalmanagmentApi {
         else{ // type == 'W'
             goal.setcurrentWeight(request.currWeight);
             goal.setgoalWeight(request.goalWeight);
+            goal.setstartWeight(request.startWeight);
 
             goal.setweeklyFitness(null);
             goal.setweeklyFitnessDone(null);
