@@ -128,6 +128,7 @@ public class GoalmanagmentApi {
                 continue;
             }
             Character type = trgoal.getgoalType();
+
             if(type == 'F'){
                 Character ftype = trgoal.getfitnessType();
                 if(ftype == 'F'){
@@ -158,6 +159,7 @@ public class GoalmanagmentApi {
                     continue;
                 }
             }
+
             else if(type == 'W'){
                 if(trgoal.getcurrentWeight() == trgoal.getgoalWeight() && trgoal.getcurrentWeight()!=null && trgoal.getgoalWeight()!=null){
                     //completed
@@ -167,6 +169,7 @@ public class GoalmanagmentApi {
                 }
                 continue;   
             }
+            
             else if(type == 'C'){
                 if(trgoal.getcals() <= trgoal.geteatenCals() && trgoal.getcals()!=null && trgoal.geteatenCals()!=null){
                     //completed
