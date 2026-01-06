@@ -36,11 +36,16 @@ public class Goal {
         private Double goalWeight = null;
         private Double startWeight = null;
 
+        private String userId;
+
     public Goal(){
 
     }
 
     //setterji:
+    public void setuserId(String s){
+        this.userId = s;
+    }
     public void setgoalTitle(String s){
         this.goalTitle =s;
     }
@@ -110,6 +115,9 @@ public class Goal {
     }
 
     //getterji:
+    public String getuserId(){
+        return userId;
+    }
     public Long getId(){
         return id;
     }
