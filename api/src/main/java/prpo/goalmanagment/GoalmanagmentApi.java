@@ -1,9 +1,6 @@
 package prpo.goalmanagment;
 
-import java.beans.Transient;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -40,6 +37,7 @@ public class GoalmanagmentApi {
         goal.setdateStart(request.dateStart);
         goal.setdateEnd(request.dateEnd);
         goal.setstatus(request.status);
+        goal.setUserId(request.userId);
 
         if(type == 'F'){
             goal.setfitnessType(request.fitnessType);
@@ -116,92 +114,89 @@ public class GoalmanagmentApi {
     }
 
     @GetMapping("/api/allGoals")
-    public List<Goal> getAllGoals() {
-        List<Goal> goals = gr.findAll(); 
-        LocalDate today = LocalDate.now();
-        for(int i = 0; i < goals.size(); i++){
-            Goal trgoal = goals.get(i);
+public List<Goal> getAllGoals(@RequestParam Long userId) {
+    // pridobimo vse goale samo za podanega userja
+    List<Goal> goals = gr.findAll().stream()
+                         .filter(goal -> goal.getUserId() != null && goal.getUserId().equals(userId))
+                         .collect(Collectors.toList());
 
-            if(trgoal.getdateEnd() != null && !trgoal.getdateEnd().isAfter(today)){
+    LocalDate today = LocalDate.now();
+
+    for (Goal trgoal : goals) {
+
+        // če je goal že pretekel, označi kot completed
+        if (trgoal.getdateEnd() != null && !trgoal.getdateEnd().isAfter(today)) {
+            trgoal.setstatus("completed");
+            gr.save(trgoal);
+            continue;
+        }
+
+        Character type = trgoal.getgoalType();
+
+        if (type == 'F') {
+            Character ftype = trgoal.getfitnessType();
+            if (ftype == 'F') {
+                if (trgoal.getweeklyFitness() != null && trgoal.getweeklyFitnessDone() != null
+                        && trgoal.getweeklyFitnessDone() >= trgoal.getweeklyFitness()) {
+                    trgoal.setstatus("completed");
+                    gr.save(trgoal);
+                    continue;
+                }
+            } else if (ftype == 'R') {
+                if (trgoal.getkms() != null && trgoal.getkmsDone() != null
+                        && trgoal.getkmsDone() >= trgoal.getkms()) {
+                    trgoal.setstatus("completed");
+                    gr.save(trgoal);
+                    continue;
+                }
+            } else if (ftype == 'S') {
+                if (trgoal.getsteps() != null && trgoal.getstepsDone() != null
+                        && trgoal.getstepsDone() >= trgoal.getsteps()) {
+                    trgoal.setstatus("completed");
+                    gr.save(trgoal);
+                    continue;
+                }
+            }
+        } else if (type == 'W') {
+            if (trgoal.getcurrentWeight() != null && trgoal.getgoalWeight() != null
+                    && trgoal.getcurrentWeight().equals(trgoal.getgoalWeight())) {
                 trgoal.setstatus("completed");
                 gr.save(trgoal);
                 continue;
             }
-            Character type = trgoal.getgoalType();
-
-            if(type == 'F'){
-                Character ftype = trgoal.getfitnessType();
-                if(ftype == 'F'){
-                    if(trgoal.getweeklyFitness() <= trgoal.getweeklyFitnessDone() && trgoal.getweeklyFitness()!=null && trgoal.getweeklyFitnessDone()!=null){
-                        //completed
-                        trgoal.setstatus("completed");
-                        gr.save(trgoal);
-                        continue;
-                    }
-                    continue;
-                }
-                else if(ftype == 'R'){
-                    if(trgoal.getkms() <= trgoal.getkmsDone() && trgoal.getkms()!=null && trgoal.getkmsDone()!=null){
-                        //completed
-                        trgoal.setstatus("completed");
-                        gr.save(trgoal);
-                        continue;
-                    }
-                    continue;
-                }
-                else if(ftype == 'S'){
-                    if(trgoal.getsteps() <= trgoal.getstepsDone() && trgoal.getsteps()!=null && trgoal.getstepsDone()!=null){
-                        //completed
-                        trgoal.setstatus("completed");
-                        gr.save(trgoal);
-                        continue;
-                    }
-                    continue;
-                }
-            }
-
-            else if(type == 'W'){
-                if(trgoal.getcurrentWeight() == trgoal.getgoalWeight() && trgoal.getcurrentWeight()!=null && trgoal.getgoalWeight()!=null){
-                    //completed
-                    trgoal.setstatus("completed");
-                    gr.save(trgoal);
-                    continue;
-                }
-                continue;   
-            }
-            
-            else if(type == 'C'){
-                if(trgoal.getcals() <= trgoal.geteatenCals() && trgoal.getcals()!=null && trgoal.geteatenCals()!=null){
-                    //completed
-                    trgoal.setstatus("completed");
-                    gr.save(trgoal);
-                    continue;
-                }
+        } else if (type == 'C') {
+            if (trgoal.getcals() != null && trgoal.geteatenCals() != null
+                    && trgoal.geteatenCals() >= trgoal.getcals()) {
+                trgoal.setstatus("completed");
+                gr.save(trgoal);
                 continue;
             }
         }
-        //uredimo goale da so najprej "in progress" prikazani
-        Collections.sort(goals, new Comparator<Goal>() {
-        @Override
-        public int compare(Goal g1, Goal g2) {
-            boolean g1InProgress = "in progress".equals(g1.getstatus());
-            boolean g2InProgress = "in progress".equals(g2.getstatus());
-            
-            if(g1InProgress && !g2InProgress) {
-                return -1;
-            } else if(!g1InProgress && g2InProgress) {
-                return 1;
-            } else {
-                return 0; 
-            }
-        }
-    });        
-        return goals;
     }
 
+    // uredimo goale, da so najprej "in progress"
+    goals.sort((g1, g2) -> {
+        boolean g1InProgress = "in progress".equals(g1.getstatus());
+        boolean g2InProgress = "in progress".equals(g2.getstatus());
+        if (g1InProgress && !g2InProgress) return -1;
+        if (!g1InProgress && g2InProgress) return 1;
+        return 0;
+    });
+
+    return goals;
+}
+
+
+    // //popravi da gleda userid
+    // @GetMapping("/api/existsGoalType")
+    // public boolean checkGoalExists(@RequestParam Character goalType, Long userId) {
+    //     return gr.existsByGoalType(goalType);
+    // }
+
     @GetMapping("/api/existsGoalType")
-    public boolean checkGoalExists(@RequestParam Character goalType) {
-        return gr.existsByGoalType(goalType);
+    public boolean checkGoalExists(@RequestParam Character goalType, @RequestParam Long userId) {
+        // preverimo, če obstaja goal s podanim goalType in userId
+        return gr.existsByGoalTypeAndUserId(goalType, userId);
     }
 
     @DeleteMapping("/api/deleteGoal")
@@ -220,6 +215,7 @@ public class GoalmanagmentApi {
         goal.setdateStart(request.dateStart);
         goal.setdateEnd(request.dateEnd);
         goal.setstatus(request.status);
+        goal.setUserId(request.userId);
 
         if(type == 'F'){
             goal.setfitnessType(request.fitnessType);
@@ -296,11 +292,12 @@ public class GoalmanagmentApi {
 
     }
 
+    //popravi da gleda tudi userid
     @GetMapping("/api/getCalorieGoal")
-    public Goal getCalorieGoal(){
+    public Goal getCalorieGoal(@RequestParam Long userId){
         List<Goal> allGoals = gr.findAll();
         for(int i = 0; i < allGoals.size(); i++){
-            if(allGoals.get(i).getgoalType() == 'C'){
+            if(allGoals.get(i).getgoalType() == 'C' && allGoals.get(i).getUserId() == userId){
                 return allGoals.get(i);
             }
         }
@@ -311,9 +308,24 @@ public class GoalmanagmentApi {
     public void updateProgressCalories(@RequestParam Long id, Integer eatenCals){
         //updejta kalorije (rocno + za avtomatsko updatanje) 
         //parameter je koliko kalorij si zdej pojedu tako da se dejansko pristejejo trenutnim 
-        Optional<Goal> ogoal = gr.findById(id);
+        Optional<Goal> ogoal = gr.findById(id); //poglej tudi da je pravilen userID
         Goal trGoal = ogoal.get();
         Integer trCals = trGoal.geteatenCals();
+        if(eatenCals < 0){
+            Integer newCals = trCals-eatenCals;
+            Integer gcals = trGoal.getcals();
+            if(newCals < 0){
+                trGoal.setcals(gcals - eatenCals);
+                trGoal.seteatenCals(0);   
+                 gr.save(trGoal);
+                 return;
+            }
+            trGoal.seteatenCals(newCals);
+            Integer newgoalcals = gcals-newCals;
+            //trGoal.setcals(newgoalcals);
+            gr.save(trGoal);
+            return;
+        }
         Integer newCals = trCals+eatenCals;
         trGoal.seteatenCals(newCals);
         Integer gcals = trGoal.getcals();
@@ -322,6 +334,7 @@ public class GoalmanagmentApi {
         gr.save(trGoal);
         return;
     }
+
 
     @PutMapping("/api/updateProgressWeight")
     public void updateProgressWeight(@RequestParam Long id, Double newWeight){
@@ -371,6 +384,7 @@ public class GoalmanagmentApi {
             return;
         }
     }
+
 
     @PutMapping("/api/complete")
     public void complete(Long id){

@@ -1,7 +1,6 @@
 package prpo.goalmanagment.dtos;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public class CreateGoalRequest {
     public String goalTitle;
@@ -9,6 +8,7 @@ public class CreateGoalRequest {
     public LocalDate dateStart;
     public LocalDate dateEnd;
     public String status; // in progress, done
+    public Long userId;
     
     //F:
     public Character fitnessType; //F, R, S fitnes, run, steps

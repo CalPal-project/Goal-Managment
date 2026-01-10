@@ -10,6 +10,7 @@ public class UpdateGoalRequest {
     public LocalDate dateStart;
     public LocalDate dateEnd;
     public String status; // in progress, done
+    public Long userId;
     
     //F:
     public Character fitnessType; //F, R, S fitnes, run, steps

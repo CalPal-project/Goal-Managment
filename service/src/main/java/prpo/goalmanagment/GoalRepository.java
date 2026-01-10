@@ -25,4 +25,6 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
     
     @Query("SELECT CASE WHEN COUNT(g) > 0 THEN true ELSE false END " + "FROM Goal g WHERE g.goalType = :goalType")
     boolean existsByGoalType(@Param("goalType") char goalType);
+
+    boolean existsByGoalTypeAndUserId(Character goalType, Long userId);
 }
