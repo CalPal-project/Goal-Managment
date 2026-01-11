@@ -32,12 +32,15 @@ public class GoalmanagmentApi {
         Goal goal = new Goal();
         
         char type = request.goalType;
+
         goal.setgoalTitle(request.goalTitle);
         goal.setgoalType(request.goalType);
         goal.setdateStart(request.dateStart);
         goal.setdateEnd(request.dateEnd);
         goal.setstatus(request.status);
         goal.setUserId(request.userId);
+
+        LocalDate today = LocalDate.now();
 
         if(type == 'F'){
             goal.setfitnessType(request.fitnessType);
@@ -80,6 +83,7 @@ public class GoalmanagmentApi {
         else if(type == 'C'){
             goal.setcals(request.cals);
             goal.seteatenCals(request.eatenCals);
+            goal.settodayCals(today);
 
             goal.setfitnessType(null);
             goal.setcurrentWeight(null);
@@ -115,16 +119,12 @@ public class GoalmanagmentApi {
 
     @GetMapping("/api/allGoals")
 public List<Goal> getAllGoals(@RequestParam Long userId) {
-    // pridobimo vse goale samo za podanega userja
-    List<Goal> goals = gr.findAll().stream()
-                         .filter(goal -> goal.getUserId() != null && goal.getUserId().equals(userId))
-                         .collect(Collectors.toList());
+    List<Goal> goals = gr.findAll().stream().filter(goal -> goal.getUserId() != null && goal.getUserId().equals(userId)).collect(Collectors.toList());
 
     LocalDate today = LocalDate.now();
 
     for (Goal trgoal : goals) {
 
-        // če je goal že pretekel, označi kot completed
         if (trgoal.getdateEnd() != null && !trgoal.getdateEnd().isAfter(today)) {
             trgoal.setstatus("completed");
             gr.save(trgoal);
@@ -132,6 +132,15 @@ public List<Goal> getAllGoals(@RequestParam Long userId) {
         }
 
         Character type = trgoal.getgoalType();
+
+        if(type == 'C'){
+            if(today != trgoal.gettodayCals()){
+                trgoal.setstatus("in progress");
+                trgoal.settodayCals(today);
+                gr.save(trgoal);
+                continue;
+            }
+        }
 
         if (type == 'F') {
             Character ftype = trgoal.getfitnessType();
@@ -195,7 +204,6 @@ public List<Goal> getAllGoals(@RequestParam Long userId) {
 
     @GetMapping("/api/existsGoalType")
     public boolean checkGoalExists(@RequestParam Character goalType, @RequestParam Long userId) {
-        // preverimo, če obstaja goal s podanim goalType in userId
         return gr.existsByGoalTypeAndUserId(goalType, userId);
     }
 
@@ -210,6 +218,9 @@ public List<Goal> getAllGoals(@RequestParam Long userId) {
         Goal goal = ogoal.get();
 
         char type = request.goalType;
+
+        LocalDate today = LocalDate.now();
+        
         goal.setgoalTitle(request.goalTitle);
         goal.setgoalType(request.goalType);
         goal.setdateStart(request.dateStart);
@@ -258,6 +269,7 @@ public List<Goal> getAllGoals(@RequestParam Long userId) {
         else if(type == 'C'){
             goal.setcals(request.cals);
             goal.seteatenCals(request.eatenCals);
+            goal.settodayCals(today);
 
             goal.setfitnessType(null);
             goal.setcurrentWeight(null);
@@ -307,30 +319,26 @@ public List<Goal> getAllGoals(@RequestParam Long userId) {
     @PutMapping("/api/updateProgressCalories")
     public void updateProgressCalories(@RequestParam Long id, Integer eatenCals){
         //updejta kalorije (rocno + za avtomatsko updatanje) 
-        //parameter je koliko kalorij si zdej pojedu tako da se dejansko pristejejo trenutnim 
-        Optional<Goal> ogoal = gr.findById(id); //poglej tudi da je pravilen userID
+        
+        Optional<Goal> ogoal = gr.findById(id);
         Goal trGoal = ogoal.get();
         Integer trCals = trGoal.geteatenCals();
-        if(eatenCals < 0){
+        Integer gcals = trGoal.getcals();
+        if(eatenCals < 0){ // ko posodobis iz telovadb
+            eatenCals = eatenCals * (-1);
             Integer newCals = trCals-eatenCals;
-            Integer gcals = trGoal.getcals();
             if(newCals < 0){
-                trGoal.setcals(gcals - eatenCals);
                 trGoal.seteatenCals(0);   
-                 gr.save(trGoal);
-                 return;
             }
-            trGoal.seteatenCals(newCals);
-            Integer newgoalcals = gcals-newCals;
-            //trGoal.setcals(newgoalcals);
+            else{
+                trGoal.seteatenCals(newCals);
+            }
+            trGoal.setcals(gcals - eatenCals);
             gr.save(trGoal);
             return;
         }
         Integer newCals = trCals+eatenCals;
         trGoal.seteatenCals(newCals);
-        Integer gcals = trGoal.getcals();
-        Integer newgoalcals = gcals-newCals;
-        //trGoal.setcals(newgoalcals);
         gr.save(trGoal);
         return;
     }
@@ -359,7 +367,6 @@ public List<Goal> getAllGoals(@RequestParam Long userId) {
             trGoal.setweeklyFitnessDone(newf);
             Double goalf = trGoal.getweeklyFitness();
             Double newGoalf = goalf - newf;
-            //trGoal.setweeklyFitness(newGoalf);
             gr.save(trGoal);
             return;
         }
@@ -369,7 +376,6 @@ public List<Goal> getAllGoals(@RequestParam Long userId) {
             trGoal.setkmsDone(newtrkms);
             Double goalkms = trGoal.getkms();
             Double newgoalkms = goalkms-newtrkms;
-            //trGoal.setkms(newgoalkms);
             gr.save(trGoal);
             return;
         }
@@ -379,7 +385,6 @@ public List<Goal> getAllGoals(@RequestParam Long userId) {
             trGoal.setstepsDone(newtrsteps);
             Integer goalsteps = trGoal.getsteps();
             Integer newgoalsteps = goalsteps-newtrsteps;
-            //trGoal.setsteps(newgoalsteps);
             gr.save(trGoal);
             return;
         }
@@ -393,25 +398,5 @@ public List<Goal> getAllGoals(@RequestParam Long userId) {
         goal.setstatus("completed");
         gr.save(goal);
     }
-
-
-    // //to nevem ce dela 
-    // @PutMapping("/api/{id}/progress")
-    // @Transactional
-    // public Goal updateProgress(@PathVariable Long id, @RequestBody Double newProgress) {
-    //     Optional<Goal> goalOpt = gr.findById(id);
-    //     if (goalOpt.isPresent()) {
-    //         Goal goal = goalOpt.get();
-    //         goal.setcurrentValue(newProgress);
-            
-    //         // Preveri če je goal dosežen
-    //         if (goal.getcurrentValue() >= goal.getTargetValue()) {
-    //             goal.setStatus("COMPLETED");
-    //         }
-            
-    //         return gr.save(goal);
-    //     }
-    //     return null;
-    // }
     
 }

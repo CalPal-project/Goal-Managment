@@ -30,6 +30,7 @@ public class Goal {
         //C:
         private Integer cals = null;
         private Integer eatenCals = 0;
+        private LocalDate todayCals = null;
 
         //W:
         private Double currWeight = null;
@@ -43,6 +44,9 @@ public class Goal {
     }
 
     //setterji:
+    public void settodayCals(LocalDate d){
+        this.todayCals = d;
+    }
     public void setUserId(Long s){
         this.userId = s;
     }
@@ -115,6 +119,9 @@ public class Goal {
     }
 
     //getterji:
+    public LocalDate gettodayCals(){
+        return todayCals;
+    }
     public Long getUserId(){
         return userId;
     }
